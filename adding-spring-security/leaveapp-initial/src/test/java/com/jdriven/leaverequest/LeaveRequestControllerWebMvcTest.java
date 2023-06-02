@@ -20,6 +20,7 @@ import static java.time.LocalDate.of;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -46,7 +47,8 @@ class LeaveRequestControllerWebMvcTest {
 					.thenReturn(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), PENDING));
 			mockmvc.perform(post("/request/{employee}", "alice")
 					.param("from", "2022-11-30")
-					.param("to", "2022-12-03"))
+					.param("to", "2022-12-03")
+					.with(jwt()))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -58,7 +60,8 @@ class LeaveRequestControllerWebMvcTest {
 		void testViewRequest() throws Exception {
 			when(service.retrieve(any()))
 					.thenReturn(Optional.of(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED)));
-			mockmvc.perform(get("/view/request/{id}", UUID.randomUUID()))
+			mockmvc.perform(get("/view/request/{id}", UUID.randomUUID())
+					.with(jwt()))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -72,7 +75,8 @@ class LeaveRequestControllerWebMvcTest {
 			list.add(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED));
 			when(service.retrieveFor("alice"))
 					.thenReturn(list);
-			mockmvc.perform(get("/view/employee/{employee}", "alice"))
+			mockmvc.perform(get("/view/employee/{employee}", "alice")
+					.with(jwt()))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -91,7 +95,8 @@ class LeaveRequestControllerWebMvcTest {
 		void testApprove() throws Exception {
 			when(service.approve(any()))
 					.thenReturn(Optional.of(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED)));
-			mockmvc.perform(post("/approve/{id}", UUID.randomUUID()))
+			mockmvc.perform(post("/approve/{id}", UUID.randomUUID())
+					.with(jwt()))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -101,7 +106,8 @@ class LeaveRequestControllerWebMvcTest {
 
 		@Test
 		void testApproveMissing() throws Exception {
-			mockmvc.perform(post("/approve/{id}", UUID.randomUUID()))
+			mockmvc.perform(post("/approve/{id}", UUID.randomUUID())
+					.with(jwt()))
 					.andExpect(status().isNoContent());
 		}
 
@@ -109,7 +115,8 @@ class LeaveRequestControllerWebMvcTest {
 		void testDeny() throws Exception {
 			when(service.deny(any()))
 					.thenReturn(Optional.of(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), DENIED)));
-			mockmvc.perform(post("/deny/{id}", UUID.randomUUID()))
+			mockmvc.perform(post("/deny/{id}", UUID.randomUUID())
+					.with(jwt()))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -119,7 +126,8 @@ class LeaveRequestControllerWebMvcTest {
 
 		@Test
 		void testViewRequestMissing() throws Exception {
-			mockmvc.perform(get("/view/request/{id}", UUID.randomUUID()))
+			mockmvc.perform(get("/view/request/{id}", UUID.randomUUID())
+					.with(jwt()))
 					.andExpect(status().isNoContent());
 		}
 
@@ -129,7 +137,8 @@ class LeaveRequestControllerWebMvcTest {
 			list.add(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED));
 			when(service.retrieveAll())
 					.thenReturn(list);
-			mockmvc.perform(get("/view/all"))
+			mockmvc.perform(get("/view/all")
+					.with(jwt()))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),

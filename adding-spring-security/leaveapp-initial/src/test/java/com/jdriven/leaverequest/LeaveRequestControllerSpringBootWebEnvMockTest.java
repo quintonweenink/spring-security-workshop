@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static com.jdriven.leaverequest.LeaveRequest.Status.APPROVED;
 import static com.jdriven.leaverequest.LeaveRequest.Status.PENDING;
 import static java.time.LocalDate.of;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -45,7 +46,8 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		void testRequest() throws Exception {
 			mockmvc.perform(post("/request/{employee}", "alice")
 					.param("from", "2022-11-30")
-					.param("to", "2022-12-03"))
+					.param("to", "2022-12-03")
+					.with(jwt()))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -57,7 +59,8 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		void testViewRequest() throws Exception {
 			LeaveRequest saved = repository
 					.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED));
-			mockmvc.perform(get("/view/request/{id}", saved.getId()))
+			mockmvc.perform(get("/view/request/{id}", saved.getId())
+					.with(jwt()))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -68,7 +71,8 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		@Test
 		void testViewEmployee() throws Exception {
 			repository.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED));
-			mockmvc.perform(get("/view/employee/{employee}", "alice"))
+			mockmvc.perform(get("/view/employee/{employee}", "alice")
+					.with(jwt()))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -87,7 +91,8 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		void testApprove() throws Exception {
 			LeaveRequest saved = repository
 					.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), PENDING));
-			mockmvc.perform(post("/approve/{id}", saved.getId()))
+			mockmvc.perform(post("/approve/{id}", saved.getId())
+					.with(jwt()))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -97,14 +102,16 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 
 		@Test
 		void testApproveMissing() throws Exception {
-			mockmvc.perform(post("/approve/{id}", UUID.randomUUID()))
+			mockmvc.perform(post("/approve/{id}", UUID.randomUUID())
+					.with(jwt()))
 					.andExpect(status().isNoContent());
 		}
 
 		@Test
 		void testDeny() throws Exception {
 			LeaveRequest saved = repository.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), PENDING));
-			mockmvc.perform(post("/deny/{id}", saved.getId()))
+			mockmvc.perform(post("/deny/{id}", saved.getId())
+					.with(jwt()))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -114,14 +121,16 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 
 		@Test
 		void testViewRequestMissing() throws Exception {
-			mockmvc.perform(get("/view/request/{id}", UUID.randomUUID()))
+			mockmvc.perform(get("/view/request/{id}", UUID.randomUUID())
+					.with(jwt()))
 					.andExpect(status().isNoContent());
 		}
 
 		@Test
 		void testViewAll() throws Exception {
 			repository.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED));
-			mockmvc.perform(get("/view/all"))
+			mockmvc.perform(get("/view/all")
+					.with(jwt()))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),

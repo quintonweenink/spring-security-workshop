@@ -10,15 +10,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 
 import static com.jdriven.leaverequest.LeaveRequest.Status.APPROVED;
 import static com.jdriven.leaverequest.LeaveRequest.Status.DENIED;
 import static com.jdriven.leaverequest.LeaveRequest.Status.PENDING;
 import static java.time.LocalDate.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -42,22 +50,35 @@ class LeaveRequestControllerSpringBootWebEnvRandomPortTest {
 		repository.clear();
 	}
 
+	@MockBean
+	private JwtDecoder jwtDecoder;
+
 	@Nested
 	class AuthorizeUser {
 
+
+
 		@BeforeEach
 		void beforeEach() {
-			// TODO Ensure below requests are executed as user alice
+			when(jwtDecoder.decode(anyString()))
+					.thenReturn(Jwt.withTokenValue("token")
+							.subject("alice")
+							.header("alg", "none")
+							.build());
 		}
 
 		@Test
 		void testRequest() {
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setBearerAuth("some.random.token");
+			HttpEntity<?> httpEntity = new HttpEntity<>(headers);
 			LocalDate from = of(2022, 11, 30);
 			LocalDate to = of(2022, 12, 3);
 			// XXX Authenticate as alice when making this request
-			ResponseEntity<LeaveRequestDTO> response = restTemplate.postForEntity(
+			ResponseEntity<LeaveRequestDTO> response = restTemplate.exchange(
 					"/request/{employee}?from={from}&to={to}",
-					null, LeaveRequestDTO.class, "alice", from, to);
+					HttpMethod.POST, httpEntity, LeaveRequestDTO.class, "alice", from, to);
 			assertThat(response.getStatusCode()).isEqualTo(ACCEPTED);
 			assertThat(response.getHeaders().getContentType()).isEqualByComparingTo(APPLICATION_JSON);
 			assertThat(response.getBody().getEmployee()).isEqualTo("alice");
