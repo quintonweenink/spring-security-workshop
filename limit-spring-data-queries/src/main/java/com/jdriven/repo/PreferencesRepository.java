@@ -9,13 +9,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface PreferencesRepository extends Repository<Preferences, Long> {
 
-	@PreAuthorize("false") // TODO Add security expression
+	@PreAuthorize("#entity.user.name == authentication.name") // TODO Add security expression
 	Preferences save(Preferences entity);
 
-	@PostAuthorize("false") // TODO Add security expression
+	@PostAuthorize("returnObject != null and returnObject.user.name == authentication.name") // TODO Add security expression
 	Preferences findById(Long id);
 
-	@Query("select p from #{#entityName} p") // TODO Add where clause
+	@Query("select p from #{#entityName} p where p.user.name = ?#{authentication.name}") // TODO Add where clause
 	Optional<Preferences> findUserPreferences();
 
 }
