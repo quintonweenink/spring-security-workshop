@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.jdriven.leaverequest.LeaveRequest.Status;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -34,16 +35,19 @@ class LeaveRequestService {
 		return repo.findByEmployee(employee);
 	}
 
+	@RolesAllowed("HR")
 	public List<LeaveRequest> retrieveAll() {
 		return repo.findAll();
 	}
 
+	@RolesAllowed("HR")
 	public Optional<LeaveRequest> approve(UUID id) {
 		Optional<LeaveRequest> found = repo.findById(id);
 		found.ifPresent(lr -> lr.setStatus(Status.APPROVED));
 		return found;
 	}
 
+	@RolesAllowed("HR")
 	public Optional<LeaveRequest> deny(UUID id) {
 		Optional<LeaveRequest> found = repo.findById(id);
 		found.ifPresent(lr -> lr.setStatus(Status.DENIED));

@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.jdriven.leaverequest.LeaveRequest.Status.APPROVED;
@@ -92,7 +93,7 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 			LeaveRequest saved = repository
 					.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), PENDING));
 			mockmvc.perform(post("/approve/{id}", saved.getId())
-					.with(jwt()))
+					.with(jwt().authorities(new SimpleGrantedAuthority("ROLE_HR"))))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -103,7 +104,7 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		@Test
 		void testApproveMissing() throws Exception {
 			mockmvc.perform(post("/approve/{id}", UUID.randomUUID())
-					.with(jwt()))
+					.with(jwt().authorities(new SimpleGrantedAuthority("ROLE_HR"))))
 					.andExpect(status().isNoContent());
 		}
 
@@ -111,7 +112,7 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		void testDeny() throws Exception {
 			LeaveRequest saved = repository.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), PENDING));
 			mockmvc.perform(post("/deny/{id}", saved.getId())
-					.with(jwt()))
+					.with(jwt().authorities(new SimpleGrantedAuthority("ROLE_HR"))))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -130,7 +131,7 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		void testViewAll() throws Exception {
 			repository.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED));
 			mockmvc.perform(get("/view/all")
-					.with(jwt()))
+					.with(jwt().authorities(new SimpleGrantedAuthority("ROLE_HR"))))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),

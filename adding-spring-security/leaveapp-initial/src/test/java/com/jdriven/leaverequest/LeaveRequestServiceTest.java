@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static com.jdriven.leaverequest.LeaveRequest.Status.APPROVED;
 import static com.jdriven.leaverequest.LeaveRequest.Status.DENIED;
@@ -74,6 +75,7 @@ class LeaveRequestServiceTest {
 	}
 
 	@Nested
+	@WithMockUser(roles = "HR")
 	class AuthorizeRole {
 
 		// TODO Authenticate with HR role when making these requests
