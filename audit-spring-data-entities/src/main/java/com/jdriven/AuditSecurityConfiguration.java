@@ -1,10 +1,27 @@
 package com.jdriven;
 
+import com.jdriven.repo.Author;
+import com.jdriven.repo.AuthorRepository;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
+
+import java.util.Optional;
 
 @Configuration
 @EnableJpaAuditing
 public class AuditSecurityConfiguration {
-	// TODO Configure JPA to look up the Author corresponding to the active user and store that along with any BlogPost
+    @Bean
+    AuditorAware<Author> auditorAware(AuthorRepository repo) {
+        // Lookup Author instance corresponding to logged in user
+        return () -> Optional.ofNullable(SecurityContextHolder.getContext())
+                .map(SecurityContext::getAuthentication)
+                .filter(Authentication::isAuthenticated)
+                .map(Authentication::getName)
+                .flatMap(repo::findByName);
+    }
 }
