@@ -8,6 +8,8 @@ import java.util.UUID;
 import com.jdriven.leaverequest.LeaveRequest.Status;
 
 import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ class LeaveRequestService {
 
 	private final LeaveRequestRepository repo;
 
+	@PreAuthorize("#employee == authentication.name or hasRole('HR')")
 	public LeaveRequest request(String employee, LocalDate from, LocalDate to) {
 		LeaveRequest leaveRequest = LeaveRequest.builder()
 				.employee(employee)
@@ -27,10 +30,12 @@ class LeaveRequestService {
 		return repo.save(leaveRequest);
 	}
 
+	@PostAuthorize("returnObject.orElse(null)?.employee == authentication.name or hasRole('HR')")
 	public Optional<LeaveRequest> retrieve(UUID id) {
 		return repo.findById(id);
 	}
 
+	@PreAuthorize("#employee == authentication.name or hasRole('HR')")
 	public List<LeaveRequest> retrieveFor(String employee) {
 		return repo.findByEmployee(employee);
 	}

@@ -14,6 +14,7 @@ target/
 .sts4-cache
 .attach_pid*
 .asciidoctorconfig.adoc
+.DS_Store
 
 ### IntelliJ IDEA ###
 .idea

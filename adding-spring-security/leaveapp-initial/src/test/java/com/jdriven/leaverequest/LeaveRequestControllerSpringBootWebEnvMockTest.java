@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.jdriven.leaverequest.LeaveRequest.Status.APPROVED;
@@ -48,7 +49,7 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 			mockmvc.perform(post("/request/{employee}", "alice")
 					.param("from", "2022-11-30")
 					.param("to", "2022-12-03")
-					.with(jwt()))
+					.with(jwt().jwt(builder -> builder.subject("alice"))))
 					.andExpectAll(
 							status().isAccepted(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -61,7 +62,7 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 			LeaveRequest saved = repository
 					.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED));
 			mockmvc.perform(get("/view/request/{id}", saved.getId())
-					.with(jwt()))
+					.with(jwt().jwt(builder -> builder.subject("alice"))))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -73,7 +74,7 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		void testViewEmployee() throws Exception {
 			repository.save(new LeaveRequest("alice", of(2022, 11, 30), of(2022, 12, 3), APPROVED));
 			mockmvc.perform(get("/view/employee/{employee}", "alice")
-					.with(jwt()))
+					.with(jwt().jwt(builder -> builder.subject("alice"))))
 					.andExpectAll(
 							status().isOk(),
 							content().contentType(MediaType.APPLICATION_JSON),
@@ -123,7 +124,7 @@ class LeaveRequestControllerSpringBootWebEnvMockTest {
 		@Test
 		void testViewRequestMissing() throws Exception {
 			mockmvc.perform(get("/view/request/{id}", UUID.randomUUID())
-					.with(jwt()))
+					.with(jwt().authorities(new SimpleGrantedAuthority("ROLE_HR"))))
 					.andExpect(status().isNoContent());
 		}
 
