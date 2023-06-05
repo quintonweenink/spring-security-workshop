@@ -1,6 +1,7 @@
 package com.jdriven.leaverequest;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -123,6 +124,7 @@ class LeaveRequestControllerSpringBootWebEnvRandomPortTest {
 					.thenReturn(Jwt.withTokenValue("token")
 							.subject("alice")
 							.header("alg", "none")
+							.claim("realm_access", Collections.singletonMap("roles", Collections.singletonList("HR")))
 							.build());
 		}
 
