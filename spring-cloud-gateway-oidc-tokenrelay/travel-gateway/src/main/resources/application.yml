@@ -32,8 +32,8 @@ spring:
       client:
         provider:
           keycloak:
-#            issuer-uri: TODO: what is the base-url of the keycloak part we want to use?
-#            user-name-attribute: TODO: find out the name of the claim best-suited as username in the JWT???
+            issuer-uri: http://localhost:8090/auth/realms/spring-cloud-gateway-realm
+            user-name-attribute: preferred_username
         registration:
           keycloak:
             client-id: spring-cloud-gateway-client

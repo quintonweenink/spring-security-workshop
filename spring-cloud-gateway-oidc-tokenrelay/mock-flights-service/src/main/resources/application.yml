@@ -5,7 +5,8 @@ spring:
   security:
     oauth2:
       resourceserver:
-      # TODO Configure resource server to handle token from Keycloak
+        jwt:
+          issuer-uri: http://localhost:8090/auth/realms/spring-cloud-gateway-realm
 
 # Match gateway route port & path
 server:
